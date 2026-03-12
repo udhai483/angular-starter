@@ -5,11 +5,16 @@
     "ng": "ng",
     "dev": "ng serve",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --configuration production",
+    "gcp-build": "npm run build",
     "watch": "ng build --watch --configuration development",
     "coverage": "ng test --coverage",
     "test": "ng test",
     "lint": "ng lint"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=11.0.0"
   },
   "prettier": {
     "printWidth": 100,
