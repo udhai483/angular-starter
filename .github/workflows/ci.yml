@@ -1,25 +1,31 @@
-name: Angular CI Pipeline
+﻿name: Angular CI/CD to Cloud Run
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
         with:
-          node-version: '20'
+          workload_identity_provider: 'projects/731323559748/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+          service_account: 'github-deployer@project-f8ae0caf-b55f-4954-9de.iam.gserviceaccount.com'
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build Angular project
-        run: npm run build -- --configuration production
+      - name: 'Deploy to Cloud Run'
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          service: 'angular-starter-app'
+          region: 'asia-southeast1'
+          source: './' 
+          flags: '--allow-unauthenticated --port=8080'
