@@ -1,14 +1,15 @@
-# Use NGINX Alpine
+﻿# Stage 1: Build
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build -- --configuration production
+
+# Stage 2: Serve
 FROM nginx:alpine
-
-# Remove default NGINX html files
-RUN rm -rf /usr/share/nginx/html/*
-
-# Copy Angular build into NGINX html folder
-COPY dist/angular-starter/browser/ /usr/share/nginx/html/
-
-# Expose port 80
-EXPOSE 80
-
-# Start NGINX
+# Ensure "angular-starter" matches the name in your package.json
+COPY --from=build /app/dist/angular-starter/browser /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
