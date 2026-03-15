@@ -7,18 +7,19 @@ COPY . .
 RUN npm run build -- --configuration production
 
 # Stage 2: Serve
-FROM nginx:alpine
+FROM nginx:stable-alpine
 
-# Remove default config
-RUN rm /etc/nginx/conf.d/default.conf
+# Remove default configs and the template folder to be safe
+RUN rm -rf /etc/nginx/conf.d/* /etc/nginx/templates
 
-# Copy your nginx.conf to a template location
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+# Copy your nginx.conf directly
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy files from build
+# Direct copy using wildcard to handle Angular 21's structure
 COPY --from=build /app/dist/*/browser/ /usr/share/nginx/html/
 
-# Cloud Run uses the $PORT variable. This command replaces $PORT in your config 
-# and starts Nginx.
+# Cloud Run requires the container to listen on 8080
 EXPOSE 8080
-CMD ["sh", "-c", "envsubst '${PORT}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+
+# Run nginx as the main process
+CMD ["nginx", "-g", "daemon off;"]
