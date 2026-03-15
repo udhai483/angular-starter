@@ -8,18 +8,11 @@ RUN npm run build -- --configuration production
 
 # Stage 2: Serve
 FROM nginx:stable-alpine
-
-# Remove default configs and the template folder to be safe
-RUN rm -rf /etc/nginx/conf.d/* /etc/nginx/templates
-
-# Copy your nginx.conf directly
+RUN rm -rf /etc/nginx/conf.d/*
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Direct copy using wildcard to handle Angular 21's structure
+# Use a wildcard to handle any project name variations in Angular 21
 COPY --from=build /app/dist/*/browser/ /usr/share/nginx/html/
 
-# Cloud Run requires the container to listen on 8080
 EXPOSE 8080
-
-# Run nginx as the main process
 CMD ["nginx", "-g", "daemon off;"]
