@@ -22,10 +22,21 @@ jobs:
           workload_identity_provider: projects/731323559748/locations/global/workloadIdentityPools/github-pool/providers/github-provider
           service_account: github-deployer@project-f8ae0caf-b55f-4954-9de.iam.gserviceaccount.com
 
+      - name: Configure Docker
+        run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev --quiet
+
+      - name: Build Docker Image
+        run: |
+          docker build -t asia-southeast1-docker.pkg.dev/project-f8ae0caf-b55f-4954-9de/signal-forms/angular-starter:${{ github.sha }} .
+
+      - name: Push Docker Image
+        run: |
+          docker push asia-southeast1-docker.pkg.dev/project-f8ae0caf-b55f-4954-9de/signal-forms/angular-starter:${{ github.sha }}
+
       - name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: angular-starter-app
-          region: asia-southeast1
-          source: ./
-          flags: --allow-unauthenticated --port=8080 --cpu=1 --memory=512Mi
+        run: |
+          gcloud run deploy angular-starter-app \
+            --image asia-southeast1-docker.pkg.dev/project-f8ae0caf-b55f-4954-9de/signal-forms/angular-starter:${{ github.sha }} \
+            --region asia-southeast1 \
+            --allow-unauthenticated \
+            --port 8080
