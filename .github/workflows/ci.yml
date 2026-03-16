@@ -28,4 +28,5 @@ jobs:
           service: 'angular-starter-app'
           region: 'asia-southeast1'
           source: './' 
-          flags: '--allow-unauthenticated --port=8080'
+          # We force the port to 8080 to match our Nginx config
+          flags: '--allow-unauthenticated --port=8080 --cpu=1 --memory=512Mi'

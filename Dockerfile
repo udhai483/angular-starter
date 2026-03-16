@@ -4,23 +4,27 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 COPY . .
-# Explicitly use the local CLI to build
 RUN ./node_modules/.bin/ng build --configuration production
-
-# IMPORTANT: Check if dist was actually created
-RUN ls -la dist/
 
 # Stage 2: Serve
 FROM nginx:stable-alpine
-RUN rm -rf /etc/nginx/conf.d/*
-COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Use a wildcard to find the folder regardless of the name
+# Clean default Nginx files
+RUN rm -rf /etc/nginx/conf.d/*
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy your full nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Copy all built files
 COPY --from=build /app/dist/ /usr/share/nginx/html/
 
-# Move files to the root of the nginx html folder
-RUN [ -d /usr/share/nginx/html/angular-starter/browser ] && mv /usr/share/nginx/html/angular-starter/browser/* /usr/share/nginx/html/ || true
-RUN [ -d /usr/share/nginx/html/browser ] && mv /usr/share/nginx/html/browser/* /usr/share/nginx/html/ || true
+# CRITICAL: Angular 21 often nests files in dist/project-name/browser.
+# This finds that folder and moves the files to the root /usr/share/nginx/html/
+RUN find /usr/share/nginx/html -type f -name "index.html" -exec dirname {} \; > /tmp/webroot.txt && \
+    cp -r $(cat /tmp/webroot.txt)/* /usr/share/nginx/html/ || true
 
 EXPOSE 8080
-CMD ["nginx", "-g", "daemon off;"]
+
+# Start Nginx using the explicit config file
+CMD ["nginx", "-g", "daemon off;", "-c", "/etc/nginx/nginx.conf"]
