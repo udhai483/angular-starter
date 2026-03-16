@@ -1,5 +1,5 @@
 # Stage 1: Build Angular app
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
@@ -16,9 +16,7 @@ RUN rm -rf /etc/nginx/conf.d/*
 RUN rm -rf /usr/share/nginx/html/*
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Correct Angular 21 build output path
-COPY --from=build /app/dist/angular-starter/browser/ /usr/share/nginx/html/
+COPY --from=build /app/dist/angular-starter/ /usr/share/nginx/html/
 
 EXPOSE 8080
 
