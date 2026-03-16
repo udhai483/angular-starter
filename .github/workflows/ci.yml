@@ -8,25 +8,24 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: read
+      id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v2'
+      - id: auth
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: 'projects/731323559748/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
-          service_account: 'github-deployer@project-f8ae0caf-b55f-4954-9de.iam.gserviceaccount.com'
+          workload_identity_provider: projects/731323559748/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github-deployer@project-f8ae0caf-b55f-4954-9de.iam.gserviceaccount.com
 
-      - name: 'Deploy to Cloud Run'
-        uses: 'google-github-actions/deploy-cloudrun@v2'
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
         with:
-          service: 'angular-starter-app'
-          region: 'asia-southeast1'
-          source: './' 
-          # We force the port to 8080 to match our Nginx config
-          flags: '--allow-unauthenticated --port=8080 --cpu=1 --memory=512Mi'
+          service: angular-starter-app
+          region: asia-southeast1
+          source: ./
+          flags: --allow-unauthenticated --port=8080 --cpu=1 --memory=512Mi
